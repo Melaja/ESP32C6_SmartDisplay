@@ -5,6 +5,14 @@
 
 ---
 
+## v2.2.0 - 2026-03-04
+
+### Fix
+- Webportaal POST-handler: SSID, Bot Token en Chat ID worden nu getrimd (spaties en regelafbrekingen verwijderd).
+  Voorkomt HTTP 400/401-fouten bij Telegram als de gebruiker de waarde kopieert uit een Telegram-bericht.
+
+---
+
 ## v2.1.0 - 2026-03-05
 
 ### Beveiliging

@@ -9,8 +9,8 @@
             - Na opslaan: herstart met nieuwe instellingen
             - Volledig tweetalig: Nederlands / English (op basis van cfg.taal)
   Auteur  : JWP van Renen
-  Versie  : v2.1.0
-  Datum   : 2026-03-05 00:00:00 (Europe/Brussels)
+  Versie  : v2.2.0
+  Datum   : 2026-03-04 00:00:00 (Europe/Brussels)
 */
 
 #pragma once
@@ -232,6 +232,8 @@ static void wc_handle_opslaan() {
   String token   = wc_url_decode(wc_server.arg("tg_token"));
   String chatid  = wc_url_decode(wc_server.arg("tg_chatid"));
   String tijdzone= wc_url_decode(wc_server.arg("tijdzone"));
+  // Spaties/regelafbrekingen verwijderen (komen voor bij kopiëren uit Telegram)
+  ssid.trim(); token.trim(); chatid.trim();
   String taal    = wc_server.arg("taal");
   if (taal != "nl" && taal != "en") taal = "nl";
   bool isEn = (taal == "en");
