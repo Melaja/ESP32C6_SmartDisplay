@@ -1,0 +1,40 @@
+# WiFi-inloggegevens: NOOIT committen (bevat wachtwoorden)
+wifi_config.h
+
+# Grote externe libraries (te downloaden via platformio of handmatig)
+libraries/lvgl/
+libraries/GFX_Library_for_Arduino/
+
+# PlatformIO build-uitvoer
+.pio/
+
+# Arduino IDE build-uitvoer
+build/
+.cache/
+
+# IDE-specifieke bestanden
+.vscode/
+*.sublime-*
+
+# Claude Code interne bestanden (NOOIT pushen)
+.claude/
+
+# Tijdelijke bestanden
+*.tmp
+*.bak
+*.swp
+*~
+
+# Gegenereerde binaire bestanden
+*.bin
+*.elf
+*.hex
+*.map
+
+# OS-specifiek
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# claude.md mag NOOIT worden gepusht (interne engineering-standaard)
+../claude.md
