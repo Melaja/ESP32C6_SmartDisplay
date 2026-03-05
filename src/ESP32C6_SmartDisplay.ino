@@ -15,7 +15,7 @@
               Nadien bereikbaar via http://[IP-adres]/ op uw eigen WiFi.
 
   Auteur  : JWP van Renen
-  Versie  : v2.0.0
+  Versie  : v2.1.0
   Datum   : 2026-03-05 00:00:00 (Europe/Brussels)
 
   Hardware:
@@ -46,7 +46,7 @@
 // ============================================================
 #define DEBUG_SERIAL 1
 #define DEBUG_LEVEL 3
-#define VERSIE_STRING "v2.0.0"
+#define VERSIE_STRING "v2.1.0"
 
 // ============================================================
 // VERPLICHTE INCLUDE VOLGORDE

@@ -1,7 +1,7 @@
 # ARCHITECTURE_NL.md - Architectuurbeschrijving (NL)
 
 **Project:** ESP32C6_SMARTDISPLAY
-**Versie:** v2.0.0
+**Versie:** v2.1.0
 **Auteur:** JWP van Renen
 **Datum:** 2026-03-05
 
@@ -173,4 +173,4 @@ Geen hardcoded pin-nummers in het hoofd-.ino bestand of in de schermmodules.
 
 ---
 
-*Architectuurdocumentatie gegenereerd met ondersteuning van Co-worker. Versie v2.0.0, 2026-03-05.*
+*Architectuurdocumentatie gegenereerd met ondersteuning van Co-worker. Versie v2.1.0, 2026-03-05.*

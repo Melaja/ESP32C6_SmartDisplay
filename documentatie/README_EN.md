@@ -1,7 +1,7 @@
 # ESP32C6 SmartDisplay - Documentation (EN)
 
 **Project:** ESP32C6_SMARTDISPLAY
-**Version:** v2.0.0
+**Version:** v2.1.0
 **Author:** JWP van Renen
 **Date:** 2026-03-05
 
@@ -177,10 +177,11 @@ ESP32C6_SmartDisplay/
 | Display init fails | Error log, restart after 5 seconds |
 | LVGL buffer allocation fails | Error log, restart after 5 seconds |
 | WiFi unavailable | Configuration portal as access point |
+| Telegram token/chat ID in web portal | Field shows asterisks if already saved. Leave empty to keep current value |
 | NTP not synchronized | Shows "--:--:--", retries every second |
 | Telegram token/chat ID empty | Error message on screen, no HTTP request |
 | WiFi lost during Telegram | Error message on screen |
 
 ---
 
-*Documentation generated with support of Co-worker. Version v2.0.0, 2026-03-05.*
+*Documentation generated with support of Co-worker. Version v2.1.0, 2026-03-05.*

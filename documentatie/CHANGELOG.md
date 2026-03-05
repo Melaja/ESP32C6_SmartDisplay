@@ -5,6 +5,17 @@
 
 ---
 
+## v2.1.0 - 2026-03-05
+
+### Beveiliging
+- Telegram Bot Token en Chat ID worden niet meer als leesbare tekst getoond in het webportaal.
+  Als een waarde al opgeslagen is, verschijnt een afgeschermd invoerveld (type password) met
+  de melding "Opgeslagen - laat leeg om te behouden". De echte waarde verlaat nooit de NVS.
+- POST-handler: een leeg ingestuurd token of chat-ID-veld behoudt de bestaande opgeslagen waarde.
+  Zo kan de gebruiker andere instellingen aanpassen zonder het token opnieuw in te voeren.
+
+---
+
 ## v2.0.0 - 2026-03-05
 
 ### Nieuw

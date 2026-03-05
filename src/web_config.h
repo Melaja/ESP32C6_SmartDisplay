@@ -9,7 +9,7 @@
             - Na opslaan: herstart met nieuwe instellingen
             - Volledig tweetalig: Nederlands / English (op basis van cfg.taal)
   Auteur  : JWP van Renen
-  Versie  : v2.0.0
+  Versie  : v2.1.0
   Datum   : 2026-03-05 00:00:00 (Europe/Brussels)
 */
 
@@ -136,10 +136,27 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
       "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Zoek <code>\"id\":</code> onder <code>\"chat\"</code> &rarr; dat is uw Chat ID.</p>"
     );
   }
+  // Bot Token: nooit de echte waarde in HTML tonen.
+  // Als al ingesteld: password-veld met placeholder "Opgeslagen - laat leeg om te behouden".
+  // Als nog leeg: gewoon tekstveld met voorbeeldplaceholder.
   html += F("<label>Bot Token</label>");
-  html += "<input type='text' name='tg_token' value='" + String(cfg.telegram_token) + "' placeholder='123456789:AABBCCDDeeffGGHHiijj...'>";
+  if (cfg.telegram_token[0] != '\0') {
+    html += "<input type='password' name='tg_token' value='' placeholder='";
+    html += isEn ? "Saved - leave empty to keep current value" : "Opgeslagen - laat leeg om te behouden";
+    html += "'>";
+  } else {
+    html += F("<input type='text' name='tg_token' value='' placeholder='123456789:AABBCCDDeeffGGHHiijj...'>");
+  }
+
+  // Chat ID: zelfde aanpak als token.
   html += F("<label>Chat ID</label>");
-  html += "<input type='text' name='tg_chatid' value='" + String(cfg.telegram_chat_id) + "' placeholder='123456789'>";
+  if (cfg.telegram_chat_id[0] != '\0') {
+    html += "<input type='password' name='tg_chatid' value='' placeholder='";
+    html += isEn ? "Saved - leave empty to keep current value" : "Opgeslagen - laat leeg om te behouden";
+    html += "'>";
+  } else {
+    html += F("<input type='text' name='tg_chatid' value='' placeholder='123456789'>");
+  }
 
   // --- Tijdzone sectie ---
   html += "<h2>&#128336; ";
@@ -232,20 +249,35 @@ static void wc_handle_opslaan() {
     tijdzone = CONFIG_STANDAARD_TIJDZONE;
   }
 
-  // Velden kopiëren naar config
+  // Velden kopiëren naar config (null-terminatie inbegrepen via - 1 + expliciete nul)
   strncpy(cfg.wifi_ssid,       ssid.c_str(),    sizeof(cfg.wifi_ssid) - 1);
-  strncpy(cfg.wifi_wachtwoord, pw.c_str(),       sizeof(cfg.wifi_wachtwoord) - 1);
-  strncpy(cfg.telegram_token,  token.c_str(),    sizeof(cfg.telegram_token) - 1);
-  strncpy(cfg.telegram_chat_id,chatid.c_str(),   sizeof(cfg.telegram_chat_id) - 1);
-  strncpy(cfg.ntp_tijdzone,    tijdzone.c_str(), sizeof(cfg.ntp_tijdzone) - 1);
-  strncpy(cfg.taal,            taal.c_str(),     sizeof(cfg.taal) - 1);
-  // Null-terminatie garanderen
-  cfg.wifi_ssid[sizeof(cfg.wifi_ssid) - 1]              = '\0';
-  cfg.wifi_wachtwoord[sizeof(cfg.wifi_wachtwoord) - 1]  = '\0';
-  cfg.telegram_token[sizeof(cfg.telegram_token) - 1]    = '\0';
-  cfg.telegram_chat_id[sizeof(cfg.telegram_chat_id) - 1]= '\0';
-  cfg.ntp_tijdzone[sizeof(cfg.ntp_tijdzone) - 1]        = '\0';
-  cfg.taal[sizeof(cfg.taal) - 1]                        = '\0';
+  cfg.wifi_ssid[sizeof(cfg.wifi_ssid) - 1] = '\0';
+
+  strncpy(cfg.wifi_wachtwoord, pw.c_str(),      sizeof(cfg.wifi_wachtwoord) - 1);
+  cfg.wifi_wachtwoord[sizeof(cfg.wifi_wachtwoord) - 1] = '\0';
+
+  // Token en chat ID: alleen overschrijven als de gebruiker iets heeft ingevuld.
+  // Leeg veld = "bestaande waarde behouden" (veld werd als password-placeholder getoond).
+  if (token.length() > 0) {
+    strncpy(cfg.telegram_token, token.c_str(), sizeof(cfg.telegram_token) - 1);
+    cfg.telegram_token[sizeof(cfg.telegram_token) - 1] = '\0';
+    DBG_INFO("Telegram token bijgewerkt.");
+  } else {
+    DBG_INFO("Telegram token ongewijzigd (leeg ingestuurd).");
+  }
+  if (chatid.length() > 0) {
+    strncpy(cfg.telegram_chat_id, chatid.c_str(), sizeof(cfg.telegram_chat_id) - 1);
+    cfg.telegram_chat_id[sizeof(cfg.telegram_chat_id) - 1] = '\0';
+    DBG_INFO("Telegram chat ID bijgewerkt.");
+  } else {
+    DBG_INFO("Telegram chat ID ongewijzigd (leeg ingestuurd).");
+  }
+
+  strncpy(cfg.ntp_tijdzone, tijdzone.c_str(), sizeof(cfg.ntp_tijdzone) - 1);
+  cfg.ntp_tijdzone[sizeof(cfg.ntp_tijdzone) - 1] = '\0';
+
+  strncpy(cfg.taal, taal.c_str(), sizeof(cfg.taal) - 1);
+  cfg.taal[sizeof(cfg.taal) - 1] = '\0';
 
   // Opslaan naar NVS
   config_opslaan(cfg);
