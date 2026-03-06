@@ -15,7 +15,7 @@
               Nadien bereikbaar via http://[IP-adres]/ op uw eigen WiFi.
 
   Auteur  : JWP van Renen
-  Versie  : v2.5.0
+  Versie  : v2.6.0
   Datum   : 2026-03-06 00:00:00 (Europe/Brussels)
 
   Hardware:
@@ -46,7 +46,7 @@
 // ============================================================
 #define DEBUG_SERIAL 1
 #define DEBUG_LEVEL 3
-#define VERSIE_STRING "v2.5.0"
+#define VERSIE_STRING "v2.6.0"
 
 // ============================================================
 // VERPLICHTE INCLUDE VOLGORDE
@@ -108,6 +108,29 @@ static Arduino_GFX*     gfx         = nullptr;
 static lv_display_t*    lvgl_display = nullptr;
 static lv_color_t*      lvgl_buffer  = nullptr;
 static lv_obj_t*        hoofd_tabview= nullptr;
+
+// ============================================================
+// BACKLIGHT DIMMER TOESTAND
+// 0=uit, 1=gedimed, 2=volledig aan
+// ============================================================
+static volatile uint32_t bl_laatste_touch_ms = 0;
+static uint8_t           bl_toestand         = 2;  // start volledig aan
+
+static const uint32_t BL_HELDERHEID_DIM = 60;   // ~6% van 1023
+static const uint32_t BL_HELDERHEID_UIT = 0;
+
+static void bl_instellen(uint8_t toestand) {
+  if (bl_toestand == toestand) return;
+  bl_toestand = toestand;
+  uint32_t waarde;
+  switch (toestand) {
+    case 0:  waarde = BL_HELDERHEID_UIT; break;
+    case 1:  waarde = BL_HELDERHEID_DIM; break;
+    default: waarde = BL_HELDERHEID;     break;
+  }
+  ledcWrite(LCD_BL_PIN, waarde);
+  DBG_VERBOSE("Backlight toestand=%d, PWM=%d", toestand, waarde);
+}
 
 // ============================================================
 // DISPLAY REGISTER INITIALISATIE (JD9853)
@@ -228,10 +251,18 @@ static void lvgl_touch_read_cb(lv_indev_t* indev, lv_indev_data_t* data) {
   bsp_touch_read();
   touch_data_t touch_info;
   if (bsp_touch_get_coordinates(&touch_info) && touch_info.touch_num > 0) {
-    data->state   = LV_INDEV_STATE_PRESSED;
-    data->point.x = touch_info.coords[0].x;
-    data->point.y = touch_info.coords[0].y;
-    DBG_VERBOSE("Touch: x=%d, y=%d", data->point.x, data->point.y);
+    if (bl_toestand < 2) {
+      // Scherm was gedimd of uit: wekken en aanraking doorslikken
+      bl_laatste_touch_ms = millis();
+      bl_instellen(2);
+      data->state = LV_INDEV_STATE_RELEASED;  // doorslikken → geen UI-actie
+    } else {
+      bl_laatste_touch_ms = millis();
+      data->state   = LV_INDEV_STATE_PRESSED;
+      data->point.x = touch_info.coords[0].x;
+      data->point.y = touch_info.coords[0].y;
+      DBG_VERBOSE("Touch: x=%d, y=%d", data->point.x, data->point.y);
+    }
   } else {
     data->state = LV_INDEV_STATE_RELEASED;
   }
@@ -435,6 +466,9 @@ void setup() {
   // Stap 8: UI aanmaken
   ui_aanmaken();
 
+  // Stap 9: Backlight-timer initialiseren
+  bl_laatste_touch_ms = millis();
+
   DBG_INFO("=== Setup voltooid (%lu ms) ===", millis());
   DBG_INFO("Vrij heap na UI: %u bytes", esp_get_free_heap_size());
 }
@@ -447,6 +481,18 @@ void loop() {
 
   // WebServer verzoeken afhandelen (config via browser in STA-modus)
   webconfig_handleclient();
+
+  // Backlight-timer: dimmen en uitschakelen na inactiviteit
+  if (g_config.dim_vertraging > 0 || g_config.uit_vertraging > 0) {
+    uint32_t verstreken = (millis() - bl_laatste_touch_ms) / 1000;  // seconden
+    if (g_config.uit_vertraging > 0 && verstreken >= g_config.uit_vertraging) {
+      bl_instellen(0);  // uit
+    } else if (g_config.dim_vertraging > 0 && verstreken >= g_config.dim_vertraging) {
+      bl_instellen(1);  // gedimed
+    } else {
+      bl_instellen(2);  // volledig aan
+    }
+  }
 
   if (wacht_ms > 5) wacht_ms = 5;
   delay(wacht_ms);

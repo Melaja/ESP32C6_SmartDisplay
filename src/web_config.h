@@ -9,8 +9,8 @@
             - Na opslaan: herstart met nieuwe instellingen
             - Volledig tweetalig: Nederlands / English (op basis van cfg.taal)
   Auteur  : JWP van Renen
-  Versie  : v2.4.0
-  Datum   : 2026-03-04 00:00:00 (Europe/Brussels)
+  Versie  : v2.6.0
+  Datum   : 2026-03-06 00:00:00 (Europe/Brussels)
 */
 
 #pragma once
@@ -61,6 +61,38 @@ static String wc_url_decode(const String& src) {
 }
 
 // ============================================================
+// JSON ESCAPE HULPFUNCTIE
+// ============================================================
+static String wc_json_escape(const String& s) {
+  String out = "";
+  for (int i = 0; i < (int)s.length(); i++) {
+    char c = s[i];
+    if      (c == '"')  out += "\\\"";
+    else if (c == '\\') out += "\\\\";
+    else if (c == '\n') out += "\\n";
+    else if (c == '\r') out += "\\r";
+    else                out += c;
+  }
+  return out;
+}
+
+// ============================================================
+// ROUTE: GET /scan → WiFi-netwerken scannen, JSON retourneren
+// ============================================================
+static void wc_handle_scan() {
+  DBG_INFO("WebConfig: GET /scan");
+  int n = WiFi.scanNetworks();  // synchroon (~2-3s)
+  String json = "[";
+  for (int i = 0; i < n; i++) {
+    if (i > 0) json += ",";
+    json += "{\"ssid\":\"" + wc_json_escape(WiFi.SSID(i)) + "\",\"rssi\":" + String(WiFi.RSSI(i)) + "}";
+  }
+  json += "]";
+  WiFi.scanDelete();
+  wc_server.send(200, "application/json", json);
+}
+
+// ============================================================
 // HTML PAGINA GENEREREN
 // Vult huidige config-waarden in als standaard.
 // Tweetalig op basis van cfg.taal ("nl" of "en").
@@ -107,9 +139,20 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
   html += "<label>";
   html += isEn ? "Network name (SSID)" : "Netwerknaam (SSID)";
   html += "</label>";
-  html += "<input type='text' name='wifi_ssid' value='" + String(cfg.wifi_ssid) + "' required placeholder='";
+  // SSID-invoerveld + scan-knop naast elkaar
+  html += F("<div style='display:flex;gap:8px;align-items:center;margin-bottom:4px'>");
+  html += "<input type='text' id='ssid_inp' name='wifi_ssid' value='" + String(cfg.wifi_ssid) + "' required placeholder='";
   html += isEn ? "Your WiFi network name" : "Naam van uw WiFi netwerk";
-  html += "'>";
+  html += F("' style='margin-bottom:0;flex:1'>");
+  html += "<button type='button' id='scan_btn' onclick='doScan()' style='";
+  html += F("width:auto;padding:8px 10px;background:#1a4466;color:#fff;border:1px solid #336;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:.9em'>");
+  html += isEn ? "&#128246; Scan" : "&#128246; Scan";
+  html += F("</button></div>");
+  // Dropdown voor scanresultaten (verborgen totdat scan klaar is)
+  html += F("<select id='ssid_sel' style='display:none;width:100%;margin-bottom:12px;padding:8px;background:#0a0a1e;color:#eef;border:1px solid #44AAFF;border-radius:4px' onchange='selectSsid(this)'>");
+  html += F("<option value=''>");
+  html += isEn ? "-- select network --" : "-- kies netwerk --";
+  html += F("</option></select>");
   html += "<label>";
   html += isEn ? "Password" : "Wachtwoord";
   html += "</label>";
@@ -182,6 +225,51 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
           "<input type='radio' name='taal' value='en'" + String(isEn ? " checked" : "") + "> English</label>";
   html += F("</div>");
 
+  // --- Schermverlichting sectie ---
+  html += F("<h2>&#128261; ");
+  html += isEn ? "Display backlight" : "Schermverlichting";
+  html += F("</h2>");
+  html += F("<p class='tip'>");
+  html += isEn
+    ? "Time in seconds of inactivity before action. Set to 0 to disable."
+    : "Seconden inactiviteit v&oacute;&oacute;r actie. Waarde 0 = uitgeschakeld.";
+  html += F("</p>");
+  html += "<label>";
+  html += isEn ? "Dim after (seconds)" : "Dimmen na (seconden)";
+  html += "</label>";
+  html += "<input type='number' name='dim_sec' value='" + String(cfg.dim_vertraging) + "' min='0' max='3600' placeholder='60'>";
+  html += "<label>";
+  html += isEn ? "Turn off after (seconds)" : "Uitschakelen na (seconden)";
+  html += "</label>";
+  html += "<input type='number' name='uit_sec' value='" + String(cfg.uit_vertraging) + "' min='0' max='3600' placeholder='120'>";
+
+  // --- JavaScript voor WiFi-scan ---
+  html += F(
+    "<script>"
+    "function doScan(){"
+      "var btn=document.getElementById('scan_btn');"
+      "btn.disabled=true;btn.textContent='...';"
+      "fetch('/scan').then(function(r){return r.json();}).then(function(nets){"
+        "var sel=document.getElementById('ssid_sel');"
+        "sel.options.length=1;"
+        "nets.forEach(function(n){"
+          "var o=document.createElement('option');"
+          "o.value=n.ssid;"
+          "o.textContent=n.ssid+' ('+n.rssi+' dBm)';"
+          "sel.appendChild(o);"
+        "});"
+        "sel.style.display='block';"
+        "btn.disabled=false;btn.innerHTML='&#128246; Scan';"
+      "}).catch(function(){"
+        "btn.disabled=false;btn.innerHTML='&#128246; Scan';"
+      "});"
+    "}"
+    "function selectSsid(sel){"
+      "if(sel.value)document.getElementById('ssid_inp').value=sel.value;"
+    "}"
+    "</script>"
+  );
+
   // --- Knoppen ---
   html += "<button type='submit' class='btn-save'>&#128190; ";
   html += isEn ? "Save &amp; Restart" : "Opslaan &amp; Herstarten";
@@ -231,6 +319,8 @@ static void wc_handle_opslaan() {
   String taal    = wc_server.arg("taal");
   if (taal != "nl" && taal != "en") taal = "nl";
   bool isEn = (taal == "en");
+  uint16_t dim_sec = (uint16_t)constrain(wc_server.arg("dim_sec").toInt(), 0, 3600);
+  uint16_t uit_sec = (uint16_t)constrain(wc_server.arg("uit_sec").toInt(), 0, 3600);
 
   // Validatie: SSID is verplicht
   if (ssid.length() == 0) {
@@ -272,6 +362,9 @@ static void wc_handle_opslaan() {
 
   strncpy(cfg.taal, taal.c_str(), sizeof(cfg.taal) - 1);
   cfg.taal[sizeof(cfg.taal) - 1] = '\0';
+
+  cfg.dim_vertraging = dim_sec;
+  cfg.uit_vertraging = uit_sec;
 
   // Opslaan naar NVS
   config_opslaan(cfg);
@@ -369,6 +462,7 @@ static void wc_toon_instelmodus_scherm(lv_obj_t* scherm) {
 static void wc_init(AppConfig& cfg) {
   wc_cfg_ptr = &cfg;
   wc_server.on("/",        HTTP_GET,  wc_handle_root);
+  wc_server.on("/scan",    HTTP_GET,  wc_handle_scan);
   wc_server.on("/opslaan", HTTP_POST, wc_handle_opslaan);
   wc_server.on("/wissen",  HTTP_POST, wc_handle_wissen);
   // Captive portal: alle andere paden → root

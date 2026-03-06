@@ -19,12 +19,14 @@
 // Bevat alle instelbare parameters van het device.
 // ============================================================
 struct AppConfig {
-  char wifi_ssid[64];          // WiFi netwerknaam
-  char wifi_wachtwoord[64];    // WiFi wachtwoord
-  char callmebot_user[32];     // CallMeBot gebruikersnaam (bijv. "@UwNaam")
-  char callmebot_tekst[128];   // Gesproken tekst bij bellen (bijv. "Zoek mijn telefoon")
-  char ntp_tijdzone[64];       // POSIX tijdzone (bijv. "CET-1CEST,M3.5.0,M10.5.0/3")
-  char taal[4];                // Interface taal: "nl" (standaard) of "en"
+  char     wifi_ssid[64];          // WiFi netwerknaam
+  char     wifi_wachtwoord[64];    // WiFi wachtwoord
+  char     callmebot_user[32];     // CallMeBot gebruikersnaam (bijv. "@UwNaam")
+  char     callmebot_tekst[128];   // Gesproken tekst bij bellen (bijv. "Zoek mijn telefoon")
+  char     ntp_tijdzone[64];       // POSIX tijdzone (bijv. "CET-1CEST,M3.5.0,M10.5.0/3")
+  char     taal[4];                // Interface taal: "nl" (standaard) of "en"
+  uint16_t dim_vertraging;         // Seconden inactiviteit voor dimmen (0 = uitgeschakeld)
+  uint16_t uit_vertraging;         // Seconden inactiviteit voor scherm uit (0 = uitgeschakeld)
 };
 
 // Standaard tijdzone (België/Nederland met zomertijd)
@@ -53,7 +55,10 @@ static bool config_laden(AppConfig& cfg) {
     prefs.getString("taal",        cfg.taal,             sizeof(cfg.taal));
     // Standaard "nl" als taal niet opgeslagen is (oudere NVS)
     if (cfg.taal[0] == '\0') strncpy(cfg.taal, "nl", sizeof(cfg.taal));
-    DBG_INFO("Config geladen: SSID=%s, TZ=%s, Taal=%s", cfg.wifi_ssid, cfg.ntp_tijdzone, cfg.taal);
+    cfg.dim_vertraging = prefs.getUShort("dim_sec", 60);
+    cfg.uit_vertraging = prefs.getUShort("uit_sec", 120);
+    DBG_INFO("Config geladen: SSID=%s, TZ=%s, Taal=%s, Dim=%ds, Uit=%ds",
+             cfg.wifi_ssid, cfg.ntp_tijdzone, cfg.taal, cfg.dim_vertraging, cfg.uit_vertraging);
   } else {
     // Standaardwaarden instellen
     cfg.wifi_ssid[0]       = '\0';
@@ -63,6 +68,8 @@ static bool config_laden(AppConfig& cfg) {
     strncpy(cfg.ntp_tijdzone, CONFIG_STANDAARD_TIJDZONE, sizeof(cfg.ntp_tijdzone) - 1);
     cfg.ntp_tijdzone[sizeof(cfg.ntp_tijdzone) - 1] = '\0';
     strncpy(cfg.taal, "nl", sizeof(cfg.taal));
+    cfg.dim_vertraging = 60;
+    cfg.uit_vertraging = 120;
     DBG_INFO("Geen config in NVS, standaardwaarden gebruikt.");
   }
 
@@ -84,6 +91,8 @@ static void config_opslaan(const AppConfig& cfg) {
   prefs.putString("cb_tekst",   cfg.callmebot_tekst);
   prefs.putString("tijdzone",   cfg.ntp_tijdzone);
   prefs.putString("taal",       cfg.taal);
+  prefs.putUShort("dim_sec",    cfg.dim_vertraging);
+  prefs.putUShort("uit_sec",    cfg.uit_vertraging);
 
   prefs.end();
   DBG_INFO("Config opgeslagen naar NVS.");

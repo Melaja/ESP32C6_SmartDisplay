@@ -5,6 +5,23 @@
 
 ---
 
+## v2.6.0 - 2026-03-06
+
+### Nieuw
+- Webportaal: WiFi-netwerken scannen via knop "Scan" naast het SSID-veld.
+  ESP32 scant beschikbare netwerken en toont ze in een dropdown; klik om te selecteren.
+  Werkt zowel in AP-modus (eerste configuratie) als STA-modus.
+- Webportaal: sectie "Schermverlichting" toegevoegd.
+  Dimmen en uitschakelen instellen in seconden (0 = uitgeschakeld).
+- Scherm dimt automatisch na ingestelde tijd zonder aanraking.
+- Scherm schakelt uit na tweede ingestelde tijd.
+- Aanraking wekt het scherm op; eerste aanraking wordt doorgeslikt zodat geen onbedoelde UI-actie plaatsvindt.
+- `config_manager.h`: velden `dim_vertraging` en `uit_vertraging` (uint16_t seconden), NVS-sleutels `dim_sec` en `uit_sec`.
+- `web_config.h`: `/scan` endpoint (JSON) + JavaScript scan-UI + dim/uit-invoervelden.
+- `ESP32C6_SmartDisplay.ino`: `bl_instellen()` hulpfunctie, backlight-timer in `loop()`, aanraakdetectie bijgewerkt.
+
+---
+
 ## v2.5.0 - 2026-03-06
 
 ### Nieuw
