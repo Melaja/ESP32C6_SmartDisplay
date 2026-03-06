@@ -5,6 +5,22 @@
 
 ---
 
+## v2.9.1 - 2026-03-06 21:42 CET
+
+### Nieuw
+- Datum/Tijd scherm: versienummer zichtbaar rechtsonder in het tabblad (12pt, donkerblauw).
+- Webconfigurator: versienummer getoond onderaan de configuratiepagina.
+
+---
+
+## v2.8.1 - 2026-03-06 19:29 CET
+
+### Opgelost
+- WiFi-signaalbalken: rechtermarge vergroot van 6 naar 14 px zodat alle 4 balkjes
+  zichtbaar blijven binnen het afgeronde hoekgebied van het beeldscherm.
+
+---
+
 ## v2.8.0 - 2026-03-06 19:04 CET
 
 ### Nieuw
