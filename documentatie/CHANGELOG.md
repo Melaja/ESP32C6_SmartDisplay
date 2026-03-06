@@ -5,6 +5,17 @@
 
 ---
 
+## v2.7.0 - 2026-03-06
+
+### Nieuw
+- Webportaal: splashscreen-duur instelbaar in seconden (0–30, standaard 5, 0 = overslaan).
+  Veld staat in de sectie "Schermverlichting".
+- `config_manager.h`: veld `splash_vertraging` (uint8_t), NVS-sleutel `splash_sec`.
+- `screen_splash.h`: `splash_tonen(gfx, seconden)` accepteert instelbare duur.
+- `ESP32C6_SmartDisplay.ino`: `config_laden()` verplaatst naar vóór de splash zodat de ingestelde duur beschikbaar is bij opstart.
+
+---
+
 ## v2.6.0 - 2026-03-06
 
 ### Nieuw

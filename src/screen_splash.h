@@ -349,10 +349,12 @@ static const uint16_t PROGMEM splash_data[55040] = {
 // ============================================================
 // SPLASH TONEN FUNCTIE
 // Roep aan na display_initialiseren(), vóór lvgl_initialiseren().
+// seconden=0 slaat de splash over.
 // ============================================================
-static void splash_tonen(Arduino_GFX* gfx) {
+static void splash_tonen(Arduino_GFX* gfx, uint8_t seconden) {
+  if (seconden == 0) return;
   gfx->draw16bitRGBBitmap(0, 0, splash_data, 172, 320);
-  delay(5000);
+  delay((uint32_t)seconden * 1000UL);
 }
 
 // EINDE SCRIPT

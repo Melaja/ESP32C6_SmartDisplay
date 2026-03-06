@@ -235,6 +235,10 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
     : "Seconden inactiviteit v&oacute;&oacute;r actie. Waarde 0 = uitgeschakeld.";
   html += F("</p>");
   html += "<label>";
+  html += isEn ? "Splash screen duration (seconds, 0 = skip)" : "Splashscreen duur (seconden, 0 = overslaan)";
+  html += "</label>";
+  html += "<input type='number' name='splash_sec' value='" + String(cfg.splash_vertraging) + "' min='0' max='30' placeholder='5'>";
+  html += "<label>";
   html += isEn ? "Dim after (seconds)" : "Dimmen na (seconden)";
   html += "</label>";
   html += "<input type='number' name='dim_sec' value='" + String(cfg.dim_vertraging) + "' min='0' max='3600' placeholder='60'>";
@@ -319,8 +323,9 @@ static void wc_handle_opslaan() {
   String taal    = wc_server.arg("taal");
   if (taal != "nl" && taal != "en") taal = "nl";
   bool isEn = (taal == "en");
-  uint16_t dim_sec = (uint16_t)constrain(wc_server.arg("dim_sec").toInt(), 0, 3600);
-  uint16_t uit_sec = (uint16_t)constrain(wc_server.arg("uit_sec").toInt(), 0, 3600);
+  uint16_t dim_sec    = (uint16_t)constrain(wc_server.arg("dim_sec").toInt(),    0, 3600);
+  uint16_t uit_sec    = (uint16_t)constrain(wc_server.arg("uit_sec").toInt(),    0, 3600);
+  uint8_t  splash_sec = (uint8_t) constrain(wc_server.arg("splash_sec").toInt(), 0,   30);
 
   // Validatie: SSID is verplicht
   if (ssid.length() == 0) {
@@ -363,8 +368,9 @@ static void wc_handle_opslaan() {
   strncpy(cfg.taal, taal.c_str(), sizeof(cfg.taal) - 1);
   cfg.taal[sizeof(cfg.taal) - 1] = '\0';
 
-  cfg.dim_vertraging = dim_sec;
-  cfg.uit_vertraging = uit_sec;
+  cfg.splash_vertraging = splash_sec;
+  cfg.dim_vertraging    = dim_sec;
+  cfg.uit_vertraging    = uit_sec;
 
   // Opslaan naar NVS
   config_opslaan(cfg);

@@ -15,7 +15,7 @@
               Nadien bereikbaar via http://[IP-adres]/ op uw eigen WiFi.
 
   Auteur  : JWP van Renen
-  Versie  : v2.6.0
+  Versie  : v2.7.0
   Datum   : 2026-03-06 00:00:00 (Europe/Brussels)
 
   Hardware:
@@ -46,7 +46,7 @@
 // ============================================================
 #define DEBUG_SERIAL 1
 #define DEBUG_LEVEL 3
-#define VERSIE_STRING "v2.6.0"
+#define VERSIE_STRING "v2.7.0"
 
 // ============================================================
 // VERPLICHTE INCLUDE VOLGORDE
@@ -424,20 +424,18 @@ void setup() {
   }
   dbg_boot_info(VERSIE_STRING);
 
-  // Stap 2: Display initialiseren + splash screen tonen (5 seconden)
-  display_initialiseren();
-  splash_tonen(gfx);
-
-  // Stap 3: LVGL initialiseren
-  lvgl_initialiseren();
-  DBG_INFO("Vrij heap na display+LVGL: %u bytes", esp_get_free_heap_size());
-
-  // Stap 4: Configuratie laden uit NVS
+  // Stap 2: Configuratie laden uit NVS (vóór splash zodat duur bekend is)
   bool geconfigureerd = config_laden(g_config);
-
-  // Taal instellen op basis van config (vóór UI opbouwen)
   g_lang = (strcmp(g_config.taal, "en") == 0) ? &LANG_EN : &LANG_NL;
   DBG_INFO("Interface taal: %s", g_config.taal);
+
+  // Stap 3: Display initialiseren + splash screen tonen (instelbare duur)
+  display_initialiseren();
+  splash_tonen(gfx, g_config.splash_vertraging);
+
+  // Stap 4: LVGL initialiseren
+  lvgl_initialiseren();
+  DBG_INFO("Vrij heap na display+LVGL: %u bytes", esp_get_free_heap_size());
 
   // Stap 5: WiFi verbinden of AP-configuratiemodus starten
   bool wifi_ok = false;
