@@ -173,4 +173,4 @@ No hardcoded pin numbers in the main .ino file or in the screen modules.
 
 ---
 
-*Architecture documentation generated with support of Co-worker. Version v2.1.0, 2026-03-05.*
+*Architecture documentation by JWP van Renen. Version v2.4.0, 2026-03-06.*

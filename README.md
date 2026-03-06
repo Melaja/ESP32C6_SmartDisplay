@@ -152,4 +152,4 @@ Gebruik in productieomgevingen op eigen verantwoordelijkheid.
 
 ---
 
-*Versie v2.0.0. Ontwikkeld door JWP van Renen, met ondersteuning van Co-worker.*
+*Versie v2.4.0. Ontwikkeld door JWP van Renen.*

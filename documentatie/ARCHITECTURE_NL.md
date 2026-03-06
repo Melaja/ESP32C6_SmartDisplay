@@ -173,4 +173,4 @@ Geen hardcoded pin-nummers in het hoofd-.ino bestand of in de schermmodules.
 
 ---
 
-*Architectuurdocumentatie gegenereerd met ondersteuning van Co-worker. Versie v2.1.0, 2026-03-05.*
+*Architectuurdocumentatie door JWP van Renen. Versie v2.4.0, 2026-03-06.*

@@ -86,4 +86,4 @@
 
 ---
 
-*CHANGELOG bijgehouden met ondersteuning van Co-worker.*
+*CHANGELOG bijgehouden door JWP van Renen.*

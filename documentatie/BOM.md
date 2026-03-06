@@ -50,4 +50,4 @@
 
 ---
 
-*BOM gegenereerd met ondersteuning van Co-worker. Versie v2.0.0, 2026-03-05.*
+*BOM bijgehouden door JWP van Renen. Versie v2.4.0, 2026-03-06.*

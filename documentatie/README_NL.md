@@ -184,4 +184,4 @@ ESP32C6_SmartDisplay/
 
 ---
 
-*Documentatie gegenereerd met ondersteuning van Co-worker. Versie v2.1.0, 2026-03-05.*
+*Documentatie bijgehouden door JWP van Renen. Versie v2.4.0, 2026-03-06.*

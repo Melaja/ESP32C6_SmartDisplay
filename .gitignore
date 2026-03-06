@@ -16,7 +16,7 @@ build/
 .vscode/
 *.sublime-*
 
-# Claude Code interne bestanden (NOOIT pushen)
+# Interne projectbestanden (NOOIT pushen)
 .claude/
 
 # Tijdelijke bestanden
@@ -36,5 +36,5 @@ build/
 Thumbs.db
 desktop.ini
 
-# claude.md mag NOOIT worden gepusht (interne engineering-standaard)
+# Engineering-standaard (NOOIT pushen)
 ../claude.md
