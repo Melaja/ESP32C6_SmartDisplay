@@ -5,6 +5,17 @@
 
 ---
 
+## v2.8.0 - 2026-03-06 19:04 CET
+
+### Nieuw
+- WiFi-signaalsterkte balkjes rechtsboven op het Datum/Tijd scherm.
+  Vier balkjes (oplopende hoogte) tonen 0–4 signaalsterkte op basis van RSSI:
+  > -50 dBm = 4/4, > -65 = 3/4, > -75 = 2/4, > -85 = 1/4, verbinding verbroken = 0/4.
+  Balkjes worden elke 5 seconden bijgewerkt. Blauw = actief, donkerblauw = inactief.
+- `screen_datetime.h` v1.1.0: `dt_wifi_bar[4]` widgets + `dt_rssi_bijwerken()` functie.
+
+---
+
 ## v2.7.0 - 2026-03-06
 
 ### Nieuw

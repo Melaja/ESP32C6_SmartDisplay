@@ -7,8 +7,8 @@
             De tijd wordt gesynchroniseerd via NTP over WiFi.
             Bijwerken gebeurt via een LVGL timer elke seconde.
   Auteur  : JWP van Renen
-  Versie  : v1.0.0
-  Datum   : 2026-03-04 00:00:00 (Europe/Brussels)
+  Versie  : v1.1.0
+  Datum   : 2026-03-06 19:04:52 (CET)
 */
 
 #pragma once
@@ -27,15 +27,19 @@ static lv_obj_t* dt_label_datum     = NULL;  // Datumweergave "07 mei 2026 woens
 static lv_obj_t* dt_label_status    = NULL;  // NTP sync status
 static lv_obj_t* dt_label_ip        = NULL;  // IP-adres voor herconfiguratie
 static lv_timer_t* dt_timer         = NULL;  // LVGL timer voor secundelijkse update
+static lv_obj_t* dt_wifi_bar[4]     = {NULL, NULL, NULL, NULL};  // WiFi-signaalbalken
 
 // NTP synchronisatie status bijhouden
 static bool dt_ntp_gesynchroniseerd = false;
+// Teller voor RSSI-update (elke 5 seconden)
+static uint8_t dt_rssi_teller = 0;
 
 // ============================================================
 // VOORWAARTSE DECLARATIES (intern gebruik)
 // ============================================================
 static void dt_timer_callback(lv_timer_t* timer);
 static void dt_update_weergave(void);
+static void dt_rssi_bijwerken(void);
 
 // ============================================================
 // SCREEN AANMAKEN
@@ -100,6 +104,29 @@ static void scherm_datetime_aanmaken(lv_obj_t* parent) {
   lv_obj_set_style_text_color(dt_label_ip, lv_color_hex(0x4488FF), 0);
   lv_obj_set_style_text_align(dt_label_ip, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(dt_label_ip, LV_ALIGN_CENTER, 0, 68);
+
+  // --- WiFi-signaalbalken (rechtsboven, 4 balkjes oplopend in hoogte) ---
+  // Balkjes: breedte=4px, hoogtes 4/7/10/13px, onderkant op y=22
+  static const uint8_t bar_h[4]   = {4, 7, 10, 13};
+  static const uint8_t bar_breed  = 4;
+  static const uint8_t bar_gap    = 2;
+  static const uint8_t bar_bottom = 22;  // y van de onderkant
+  static const uint8_t bar_rechts = 6;   // marge rechts
+
+  for (int i = 0; i < 4; i++) {
+    dt_wifi_bar[i] = lv_obj_create(parent);
+    lv_obj_set_size(dt_wifi_bar[i], bar_breed, bar_h[i]);
+    lv_obj_set_style_border_width(dt_wifi_bar[i], 0, 0);
+    lv_obj_set_style_radius(dt_wifi_bar[i], 1, 0);
+    lv_obj_set_style_bg_color(dt_wifi_bar[i], lv_color_hex(0x224466), 0);  // initieel gedoofd
+    lv_obj_clear_flag(dt_wifi_bar[i], LV_OBJ_FLAG_SCROLLABLE);
+    // Positie: rechts uitlijnen, balkjes van links naar rechts toenemend
+    // x = rechterrand - marge - (3-i)*stap, y = bottom - hoogte
+    lv_obj_set_pos(dt_wifi_bar[i],
+                   172 - bar_rechts - (4 - i) * (bar_breed + bar_gap),
+                   bar_bottom - bar_h[i]);
+  }
+  dt_rssi_bijwerken();  // direct eerste meting
 
   // --- LVGL timer voor 1-seconde updates ---
   // 1000ms interval, herhaalt oneindig (repeat_count = -1)
@@ -182,11 +209,34 @@ static void dt_update_weergave(void) {
   DBG_VERBOSE("Tijd bijgewerkt: %s | %s", tijdbuf, datumbuf);
 }
 
+// WiFi-signaalbalken bijwerken op basis van RSSI
+static void dt_rssi_bijwerken(void) {
+  int bars = 0;
+  if (WiFi.status() == WL_CONNECTED) {
+    int rssi = WiFi.RSSI();
+    if      (rssi > -50) bars = 4;
+    else if (rssi > -65) bars = 3;
+    else if (rssi > -75) bars = 2;
+    else if (rssi > -85) bars = 1;
+    // else bars = 0 (< -85 dBm of niet verbonden)
+  }
+  for (int i = 0; i < 4; i++) {
+    if (dt_wifi_bar[i] == NULL) continue;
+    lv_color_t kleur = (i < bars) ? lv_color_hex(0x44AAFF) : lv_color_hex(0x224466);
+    lv_obj_set_style_bg_color(dt_wifi_bar[i], kleur, 0);
+  }
+  DBG_VERBOSE("WiFi RSSI: %d dBm → %d/4 balken", (WiFi.status() == WL_CONNECTED ? WiFi.RSSI() : 0), bars);
+}
+
 // LVGL timer callback: wordt elke seconde aangeroepen door LVGL
 static void dt_timer_callback(lv_timer_t* timer) {
-  // timer parameter niet gebruikt (vereist door LVGL callback-signatuur)
   LV_UNUSED(timer);
   dt_update_weergave();
+  // RSSI elke 5 seconden bijwerken (niet elke seconde)
+  if (++dt_rssi_teller >= 5) {
+    dt_rssi_teller = 0;
+    dt_rssi_bijwerken();
+  }
 }
 
 // Vernietig de LVGL timer wanneer het scherm niet meer actief is.
