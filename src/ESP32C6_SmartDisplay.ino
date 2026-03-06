@@ -15,8 +15,8 @@
               Nadien bereikbaar via http://[IP-adres]/ op uw eigen WiFi.
 
   Auteur  : JWP van Renen
-  Versie  : v2.8.0
-  Datum   : 2026-03-06 00:00:00 (Europe/Brussels)
+  Versie  : v2.9.0
+  Datum   : 2026-03-06 21:07:57 (CET)
 
   Hardware:
     Bord           : Waveshare ESP32-C6-Touch-LCD-1.47
@@ -46,7 +46,7 @@
 // ============================================================
 #define DEBUG_SERIAL 1
 #define DEBUG_LEVEL 3
-#define VERSIE_STRING "v2.8.0"
+#define VERSIE_STRING "v2.9.0"
 
 // ============================================================
 // VERPLICHTE INCLUDE VOLGORDE
@@ -60,6 +60,7 @@
 #include <WiFi.h>
 #include <time.h>
 #include <esp_sntp.h>
+#include <ArduinoOTA.h>
 
 // BLE
 #include <BLEDevice.h>
@@ -387,6 +388,80 @@ static bool wifi_verbinden(const char* ssid, const char* wachtwoord) {
 }
 
 // ============================================================
+// OTA (OVER-THE-AIR) UPDATE INITIALISATIE
+// Hostnaam: SmartDisplay-XXYY (laatste 4 hex van MAC-adres)
+// Uploaden via: pio run -e esp32c6_ota -t upload
+// of: python -m espota -i SmartDisplay-XXYY.local -f firmware.bin
+// ============================================================
+static void ota_initialiseren(void) {
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+  char ota_hostname[32];
+  snprintf(ota_hostname, sizeof(ota_hostname), "SmartDisplay-%02X%02X", mac[4], mac[5]);
+  ArduinoOTA.setHostname(ota_hostname);
+
+  ArduinoOTA.onStart([]() {
+    DBG_INFO("OTA gestart: %s",
+      (ArduinoOTA.getCommand() == U_FLASH) ? "firmware" : "bestandssysteem");
+    // Toon OTA-scherm via directe GFX (LVGL pauze tijdens update)
+    gfx->fillScreen(0x0009);
+    gfx->setTextColor(0xFFFF);
+    gfx->setTextSize(2);
+    gfx->setCursor(16, 70);
+    gfx->print("OTA Update");
+    gfx->setTextSize(1);
+    gfx->setCursor(22, 112);
+    gfx->print("Bezig met updaten...");
+    gfx->drawRect(16, 145, 140, 14, 0x4A5F);  // voortgangsbalk kader
+  });
+
+  ArduinoOTA.onProgress([](unsigned int geladen, unsigned int totaal) {
+    uint8_t  pct     = (uint8_t)((geladen * 100UL) / totaal);
+    uint16_t breedte = (uint16_t)((138UL  * pct)   / 100);
+    gfx->fillRect(17, 146, breedte, 12, 0x45DF);  // blauwe voortgangsbalk
+    gfx->fillRect(56, 168, 60, 10, 0x0009);        // wis oud percentage
+    gfx->setTextColor(0xCEDF);
+    gfx->setTextSize(1);
+    gfx->setCursor(66, 168);
+    gfx->print(pct);
+    gfx->print("%");
+  });
+
+  ArduinoOTA.onEnd([]() {
+    DBG_INFO("OTA voltooid.");
+    gfx->fillRect(17, 146, 138, 12, 0x07E0);  // groen = klaar
+    gfx->fillRect(40, 168, 92, 10, 0x0009);
+    gfx->setTextColor(0x07E0);
+    gfx->setTextSize(1);
+    gfx->setCursor(46, 168);
+    gfx->print("Herstarten...");
+    delay(800);
+  });
+
+  ArduinoOTA.onError([](ota_error_t fout) {
+    const char* omschrijving;
+    switch (fout) {
+      case OTA_AUTH_ERROR:    omschrijving = "Auth fout";       break;
+      case OTA_BEGIN_ERROR:   omschrijving = "Begin fout";      break;
+      case OTA_CONNECT_ERROR: omschrijving = "Verbind fout";    break;
+      case OTA_RECEIVE_ERROR: omschrijving = "Ontvangst fout";  break;
+      case OTA_END_ERROR:     omschrijving = "Einde fout";      break;
+      default:                omschrijving = "Onbekende fout";  break;
+    }
+    DBG_ERROR("OTA fout [%u]: %s", fout, omschrijving);
+    gfx->fillRect(17, 146, 138, 12, 0xF800);  // rood = fout
+    gfx->fillRect(20, 168, 132, 10, 0x0009);
+    gfx->setTextColor(0xFB00);
+    gfx->setTextSize(1);
+    gfx->setCursor(22, 168);
+    gfx->print(omschrijving);
+  });
+
+  ArduinoOTA.begin();
+  DBG_INFO("OTA gereed. Hostname: %s", ota_hostname);
+}
+
+// ============================================================
 // UI AANMAKEN
 // ============================================================
 static void ui_aanmaken(void) {
@@ -461,10 +536,13 @@ void setup() {
   DBG_INFO("Config webserver bereikbaar op http://%s/",
            WiFi.localIP().toString().c_str());
 
-  // Stap 8: UI aanmaken
+  // Stap 8: OTA updates activeren (draadloos firmware updaten via WiFi)
+  ota_initialiseren();
+
+  // Stap 9: UI aanmaken
   ui_aanmaken();
 
-  // Stap 9: Backlight-timer initialiseren
+  // Stap 10: Backlight-timer initialiseren
   bl_laatste_touch_ms = millis();
 
   DBG_INFO("=== Setup voltooid (%lu ms) ===", millis());
@@ -479,6 +557,9 @@ void loop() {
 
   // WebServer verzoeken afhandelen (config via browser in STA-modus)
   webconfig_handleclient();
+
+  // OTA update-verzoeken afhandelen
+  ArduinoOTA.handle();
 
   // Backlight-timer: dimmen en uitschakelen na inactiviteit
   if (g_config.dim_vertraging > 0 || g_config.uit_vertraging > 0) {

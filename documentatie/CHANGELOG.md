@@ -5,6 +5,27 @@
 
 ---
 
+## v2.9.0 - 2026-03-06 21:07 CET
+
+### Nieuw
+- OTA (Over-The-Air) firmware-updates via WiFi.
+  Na verbinding met het netwerk is de ESP32 draadloos te flashen zonder USB-kabel.
+  Hostnaam: `SmartDisplay-XXYY` (laatste 4 hex van MAC, zichtbaar in Serial Monitor).
+  Upload via PlatformIO: `pio run -e esp32c6_ota -t upload`
+  of direct: `python -m espota -i SmartDisplay-XXYY.local -f .pio/build/esp32c6/firmware.bin`
+- OTA-voortgangsscherm: tijdens update toont het display een voortgangsbalk (blauw → groen bij succes, rood bij fout).
+- `platformio.ini`: nieuw `[env:esp32c6_ota]` omgeving voor draadloos uploaden.
+
+---
+
+## v2.8.1 - 2026-03-06 19:29 CET
+
+### Opgelost
+- WiFi-signaalbalken: rechtermarge vergroot van 6 naar 14 px zodat alle 4 balkjes
+  zichtbaar blijven binnen het afgeronde hoekgebied van het beeldscherm.
+
+---
+
 ## v2.8.0 - 2026-03-06 19:04 CET
 
 ### Nieuw
