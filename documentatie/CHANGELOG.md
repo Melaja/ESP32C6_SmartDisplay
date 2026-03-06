@@ -5,6 +5,17 @@
 
 ---
 
+## v2.5.0 - 2026-03-06
+
+### Nieuw
+- Splash screen getoond bij opstart gedurende 5 seconden.
+  Afbeelding: 172x320 px, RGB565, opgeslagen in PROGMEM (110 KB in Flash).
+- `screen_splash.h`: bevat de afbeeldingsdata en `splash_tonen(gfx)` functie.
+- `ESP32C6_SmartDisplay.ino`: `splash_tonen(gfx)` aangeroepen tussen
+  `display_initialiseren()` en `lvgl_initialiseren()` in de setup().
+
+---
+
 ## v2.4.0 - 2026-03-06
 
 ### Nieuw

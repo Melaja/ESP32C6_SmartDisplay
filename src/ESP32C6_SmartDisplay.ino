@@ -15,8 +15,8 @@
               Nadien bereikbaar via http://[IP-adres]/ op uw eigen WiFi.
 
   Auteur  : JWP van Renen
-  Versie  : v2.2.0
-  Datum   : 2026-03-04 00:00:00 (Europe/Brussels)
+  Versie  : v2.5.0
+  Datum   : 2026-03-06 00:00:00 (Europe/Brussels)
 
   Hardware:
     Bord           : Waveshare ESP32-C6-Touch-LCD-1.47
@@ -46,7 +46,7 @@
 // ============================================================
 #define DEBUG_SERIAL 1
 #define DEBUG_LEVEL 3
-#define VERSIE_STRING "v2.4.0"
+#define VERSIE_STRING "v2.5.0"
 
 // ============================================================
 // VERPLICHTE INCLUDE VOLGORDE
@@ -73,6 +73,7 @@
 #include "web_config.h"
 
 // Scherm-modules
+#include "screen_splash.h"
 #include "screen_datetime.h"
 #include "screen_phonefinder.h"
 #include "screen_wifiscanner.h"
@@ -392,19 +393,22 @@ void setup() {
   }
   dbg_boot_info(VERSIE_STRING);
 
-  // Stap 2: Display + LVGL initialiseren
+  // Stap 2: Display initialiseren + splash screen tonen (5 seconden)
   display_initialiseren();
+  splash_tonen(gfx);
+
+  // Stap 3: LVGL initialiseren
   lvgl_initialiseren();
   DBG_INFO("Vrij heap na display+LVGL: %u bytes", esp_get_free_heap_size());
 
-  // Stap 3: Configuratie laden uit NVS
+  // Stap 4: Configuratie laden uit NVS
   bool geconfigureerd = config_laden(g_config);
 
   // Taal instellen op basis van config (vóór UI opbouwen)
   g_lang = (strcmp(g_config.taal, "en") == 0) ? &LANG_EN : &LANG_NL;
   DBG_INFO("Interface taal: %s", g_config.taal);
 
-  // Stap 4: WiFi verbinden of AP-configuratiemodus starten
+  // Stap 5: WiFi verbinden of AP-configuratiemodus starten
   bool wifi_ok = false;
   if (geconfigureerd && g_config.wifi_ssid[0] != '\0') {
     wifi_ok = wifi_verbinden(g_config.wifi_ssid, g_config.wifi_wachtwoord);
@@ -419,16 +423,16 @@ void setup() {
     return;  // Nooit bereikt
   }
 
-  // Stap 5: BLE stack initialiseren
+  // Stap 6: BLE stack initialiseren
   BLEDevice::init("ESP32C6_SmartDisplay");
   DBG_INFO("BLE stack geïnitialiseerd.");
 
-  // Stap 6: WebServer starten in STA-modus (bereikbaar via http://[IP]/)
+  // Stap 7: WebServer starten in STA-modus (bereikbaar via http://[IP]/)
   webconfig_sta_starten(g_config);
   DBG_INFO("Config webserver bereikbaar op http://%s/",
            WiFi.localIP().toString().c_str());
 
-  // Stap 7: UI aanmaken
+  // Stap 8: UI aanmaken
   ui_aanmaken();
 
   DBG_INFO("=== Setup voltooid (%lu ms) ===", millis());
