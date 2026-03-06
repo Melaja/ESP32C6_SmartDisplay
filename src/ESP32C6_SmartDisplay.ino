@@ -416,11 +416,10 @@ static void ui_aanmaken(void) {
 // SETUP (Arduino entrypoint)
 // ============================================================
 void setup() {
-  // Stap 1: Serial debug
+  // Stap 1: Serial debug (HWCDC via USB-JTAG interface)
   if (DEBUG_SERIAL) {
     Serial.begin(SERIAL_BAUD_RATE);
-    uint32_t start_ms = millis();
-    while (!Serial && millis() - start_ms < 2000) delay(10);
+    delay(1000);  // Wacht op USB CDC herverbinding na reset
   }
   dbg_boot_info(VERSIE_STRING);
 
