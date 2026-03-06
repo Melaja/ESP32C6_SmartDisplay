@@ -7,8 +7,8 @@
             De tijd wordt gesynchroniseerd via NTP over WiFi.
             Bijwerken gebeurt via een LVGL timer elke seconde.
   Auteur  : JWP van Renen
-  Versie  : v1.1.1
-  Datum   : 2026-03-06 19:29:24 (CET)
+  Versie  : v1.2.0
+  Datum   : 2026-03-06 21:42:05 (CET)
 */
 
 #pragma once
@@ -28,6 +28,7 @@ static lv_obj_t* dt_label_status    = NULL;  // NTP sync status
 static lv_obj_t* dt_label_ip        = NULL;  // IP-adres voor herconfiguratie
 static lv_timer_t* dt_timer         = NULL;  // LVGL timer voor secundelijkse update
 static lv_obj_t* dt_wifi_bar[4]     = {NULL, NULL, NULL, NULL};  // WiFi-signaalbalken
+static lv_obj_t* dt_label_versie    = NULL;  // Versienummer rechtsonder
 
 // NTP synchronisatie status bijhouden
 static bool dt_ntp_gesynchroniseerd = false;
@@ -104,6 +105,13 @@ static void scherm_datetime_aanmaken(lv_obj_t* parent) {
   lv_obj_set_style_text_color(dt_label_ip, lv_color_hex(0x4488FF), 0);
   lv_obj_set_style_text_align(dt_label_ip, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(dt_label_ip, LV_ALIGN_CENTER, 0, 68);
+
+  // --- Versienummer (klein, 12pt, rechtsonder) ---
+  dt_label_versie = lv_label_create(parent);
+  lv_label_set_text(dt_label_versie, VERSIE_STRING);
+  lv_obj_set_style_text_font(dt_label_versie, &lv_font_montserrat_12, 0);
+  lv_obj_set_style_text_color(dt_label_versie, lv_color_hex(0x223344), 0);
+  lv_obj_align(dt_label_versie, LV_ALIGN_BOTTOM_RIGHT, -6, -6);
 
   // --- WiFi-signaalbalken (rechtsboven, 4 balkjes oplopend in hoogte) ---
   // Balkjes: breedte=4px, hoogtes 4/7/10/13px, onderkant op y=22

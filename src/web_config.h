@@ -9,8 +9,8 @@
             - Na opslaan: herstart met nieuwe instellingen
             - Volledig tweetalig: Nederlands / English (op basis van cfg.taal)
   Auteur  : JWP van Renen
-  Versie  : v2.6.0
-  Datum   : 2026-03-06 00:00:00 (Europe/Brussels)
+  Versie  : v2.9.1
+  Datum   : 2026-03-06 21:42:05 (CET)
 */
 
 #pragma once
@@ -287,6 +287,9 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
   html += isEn ? "Clear configuration (factory reset)" : "Wis configuratie (factory reset)";
   html += F("</button></form>");
 
+  html += F("<p style='text-align:center;color:#445;font-size:11px;margin-top:20px;'>");
+  html += VERSIE_STRING;
+  html += F("</p>");
   html += F("</body></html>");
   return html;
 }
