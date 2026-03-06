@@ -9,7 +9,7 @@
             - Na opslaan: herstart met nieuwe instellingen
             - Volledig tweetalig: Nederlands / English (op basis van cfg.taal)
   Auteur  : JWP van Renen
-  Versie  : v2.2.0
+  Versie  : v2.3.0
   Datum   : 2026-03-04 00:00:00 (Europe/Brussels)
 */
 
@@ -117,45 +117,31 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
   html += isEn ? "WiFi password" : "WiFi wachtwoord";
   html += "'>";
 
-  // --- Telegram sectie ---
-  html += "<h2>&#128172; Telegram Bot (";
+  // --- CallMeBot sectie ---
+  html += "<h2>&#128222; CallMeBot (";
   html += isEn ? "Find Phone" : "Zoek Telefoon";
   html += ")</h2>";
   if (isEn) {
     html += F(
-      "<p class='tip'><b>Step 1:</b> Open Telegram &rarr; search <b>@BotFather</b> &rarr; send <code>/newbot</code> &rarr; copy the token.<br>"
-      "<b>Step 2:</b> Send <code>/start</code> to your new bot.<br>"
-      "<b>Step 3:</b> Open in browser: <code>https://api.telegram.org/bot<i>TOKEN</i>/getUpdates</code><br>"
-      "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Find <code>\"id\":</code> under <code>\"chat\"</code> &rarr; that is your Chat ID.</p>"
+      "<p class='tip'><b>Step 1:</b> Open Telegram &rarr; search <b>@CallMeBot_txtbot</b> &rarr; send <code>/start</code>.<br>"
+      "<b>Step 2:</b> Follow the instructions to link your phone number.<br>"
+      "<b>Step 3:</b> Your Telegram username (e.g. <code>@YourName</code>) is your CallMeBot username.</p>"
     );
   } else {
     html += F(
-      "<p class='tip'><b>Stap 1:</b> Open Telegram &rarr; zoek <b>@BotFather</b> &rarr; stuur <code>/newbot</code> &rarr; kopieer het token.<br>"
-      "<b>Stap 2:</b> Stuur <code>/start</code> naar uw nieuwe bot.<br>"
-      "<b>Stap 3:</b> Open in browser: <code>https://api.telegram.org/bot<i>TOKEN</i>/getUpdates</code><br>"
-      "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Zoek <code>\"id\":</code> onder <code>\"chat\"</code> &rarr; dat is uw Chat ID.</p>"
+      "<p class='tip'><b>Stap 1:</b> Open Telegram &rarr; zoek <b>@CallMeBot_txtbot</b> &rarr; stuur <code>/start</code>.<br>"
+      "<b>Stap 2:</b> Volg de instructies om uw telefoonnummer te koppelen.<br>"
+      "<b>Stap 3:</b> Uw Telegram-gebruikersnaam (bijv. <code>@UwNaam</code>) is uw CallMeBot-gebruikersnaam.</p>"
     );
   }
-  // Bot Token: nooit de echte waarde in HTML tonen.
-  // Als al ingesteld: password-veld met placeholder "Opgeslagen - laat leeg om te behouden".
-  // Als nog leeg: gewoon tekstveld met voorbeeldplaceholder.
-  html += F("<label>Bot Token</label>");
-  if (cfg.telegram_token[0] != '\0') {
-    html += "<input type='password' name='tg_token' value='' placeholder='";
+  // CallMeBot gebruikersnaam: als al ingesteld password-veld, anders tekstveld.
+  html += F("<label>CallMeBot gebruikersnaam</label>");
+  if (cfg.callmebot_user[0] != '\0') {
+    html += "<input type='password' name='cb_user' value='' placeholder='";
     html += isEn ? "Saved - leave empty to keep current value" : "Opgeslagen - laat leeg om te behouden";
     html += "'>";
   } else {
-    html += F("<input type='text' name='tg_token' value='' placeholder='123456789:AABBCCDDeeffGGHHiijj...'>");
-  }
-
-  // Chat ID: zelfde aanpak als token.
-  html += F("<label>Chat ID</label>");
-  if (cfg.telegram_chat_id[0] != '\0') {
-    html += "<input type='password' name='tg_chatid' value='' placeholder='";
-    html += isEn ? "Saved - leave empty to keep current value" : "Opgeslagen - laat leeg om te behouden";
-    html += "'>";
-  } else {
-    html += F("<input type='text' name='tg_chatid' value='' placeholder='123456789'>");
+    html += F("<input type='text' name='cb_user' value='' placeholder='@UwNaam'>");
   }
 
   // --- Tijdzone sectie ---
@@ -229,11 +215,10 @@ static void wc_handle_opslaan() {
   // Lees POST-velden (URL-decoded)
   String ssid    = wc_url_decode(wc_server.arg("wifi_ssid"));
   String pw      = wc_url_decode(wc_server.arg("wifi_pw"));
-  String token   = wc_url_decode(wc_server.arg("tg_token"));
-  String chatid  = wc_url_decode(wc_server.arg("tg_chatid"));
+  String cbuser  = wc_url_decode(wc_server.arg("cb_user"));
   String tijdzone= wc_url_decode(wc_server.arg("tijdzone"));
   // Spaties/regelafbrekingen verwijderen (komen voor bij kopiëren uit Telegram)
-  ssid.trim(); token.trim(); chatid.trim();
+  ssid.trim(); cbuser.trim();
   String taal    = wc_server.arg("taal");
   if (taal != "nl" && taal != "en") taal = "nl";
   bool isEn = (taal == "en");
@@ -258,21 +243,14 @@ static void wc_handle_opslaan() {
   strncpy(cfg.wifi_wachtwoord, pw.c_str(),      sizeof(cfg.wifi_wachtwoord) - 1);
   cfg.wifi_wachtwoord[sizeof(cfg.wifi_wachtwoord) - 1] = '\0';
 
-  // Token en chat ID: alleen overschrijven als de gebruiker iets heeft ingevuld.
+  // CallMeBot gebruikersnaam: alleen overschrijven als de gebruiker iets heeft ingevuld.
   // Leeg veld = "bestaande waarde behouden" (veld werd als password-placeholder getoond).
-  if (token.length() > 0) {
-    strncpy(cfg.telegram_token, token.c_str(), sizeof(cfg.telegram_token) - 1);
-    cfg.telegram_token[sizeof(cfg.telegram_token) - 1] = '\0';
-    DBG_INFO("Telegram token bijgewerkt.");
+  if (cbuser.length() > 0) {
+    strncpy(cfg.callmebot_user, cbuser.c_str(), sizeof(cfg.callmebot_user) - 1);
+    cfg.callmebot_user[sizeof(cfg.callmebot_user) - 1] = '\0';
+    DBG_INFO("CallMeBot gebruiker bijgewerkt.");
   } else {
-    DBG_INFO("Telegram token ongewijzigd (leeg ingestuurd).");
-  }
-  if (chatid.length() > 0) {
-    strncpy(cfg.telegram_chat_id, chatid.c_str(), sizeof(cfg.telegram_chat_id) - 1);
-    cfg.telegram_chat_id[sizeof(cfg.telegram_chat_id) - 1] = '\0';
-    DBG_INFO("Telegram chat ID bijgewerkt.");
-  } else {
-    DBG_INFO("Telegram chat ID ongewijzigd (leeg ingestuurd).");
+    DBG_INFO("CallMeBot gebruiker ongewijzigd (leeg ingestuurd).");
   }
 
   strncpy(cfg.ntp_tijdzone, tijdzone.c_str(), sizeof(cfg.ntp_tijdzone) - 1);

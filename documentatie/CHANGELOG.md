@@ -5,6 +5,18 @@
 
 ---
 
+## v2.3.0 - 2026-03-06
+
+### Gewijzigd
+- Zoek Telefoon scherm gebruikt nu CallMeBot in plaats van een Telegram-tekstbericht.
+  De ESP32 belt uw telefoon via tekst-naar-spraak (CallMeBot API) zodat u het kunt horen.
+- `config_manager.h`: Telegram token/chat-ID velden vervangen door `callmebot_user`.
+- `web_config.h`: Telegram-sectie vervangen door CallMeBot-sectie met setup-instructies.
+- `screen_phonefinder.h`: HTTP GET naar `api2.callmebot.com` met SSID, taal `nl-NL-Standard-B`, 2x herhalen.
+- `lang.h`: phonefinder teksten bijgewerkt (knop "Bellen", status "Oproep gestart!").
+
+---
+
 ## v2.2.0 - 2026-03-04
 
 ### Fix

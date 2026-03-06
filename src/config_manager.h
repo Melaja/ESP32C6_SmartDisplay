@@ -21,8 +21,7 @@
 struct AppConfig {
   char wifi_ssid[64];          // WiFi netwerknaam
   char wifi_wachtwoord[64];    // WiFi wachtwoord
-  char telegram_token[160];    // Telegram bot token (bijv. "123456:ABCdef...")
-  char telegram_chat_id[32];   // Telegram chat ID (numeriek of @gebruikersnaam)
+  char callmebot_user[32];     // CallMeBot gebruikersnaam (bijv. "@UwNaam")
   char ntp_tijdzone[64];       // POSIX tijdzone (bijv. "CET-1CEST,M3.5.0,M10.5.0/3")
   char taal[4];                // Interface taal: "nl" (standaard) of "en"
 };
@@ -46,8 +45,7 @@ static bool config_laden(AppConfig& cfg) {
   if (geconfigureerd) {
     prefs.getString("wifi_ssid",   cfg.wifi_ssid,        sizeof(cfg.wifi_ssid));
     prefs.getString("wifi_pw",     cfg.wifi_wachtwoord,  sizeof(cfg.wifi_wachtwoord));
-    prefs.getString("tg_token",    cfg.telegram_token,   sizeof(cfg.telegram_token));
-    prefs.getString("tg_chatid",   cfg.telegram_chat_id, sizeof(cfg.telegram_chat_id));
+    prefs.getString("cb_user",     cfg.callmebot_user,   sizeof(cfg.callmebot_user));
     prefs.getString("tijdzone",    cfg.ntp_tijdzone,     sizeof(cfg.ntp_tijdzone));
     prefs.getString("taal",        cfg.taal,             sizeof(cfg.taal));
     // Standaard "nl" als taal niet opgeslagen is (oudere NVS)
@@ -57,8 +55,7 @@ static bool config_laden(AppConfig& cfg) {
     // Standaardwaarden instellen
     cfg.wifi_ssid[0]       = '\0';
     cfg.wifi_wachtwoord[0] = '\0';
-    cfg.telegram_token[0]  = '\0';
-    cfg.telegram_chat_id[0]= '\0';
+    cfg.callmebot_user[0]  = '\0';
     strncpy(cfg.ntp_tijdzone, CONFIG_STANDAARD_TIJDZONE, sizeof(cfg.ntp_tijdzone) - 1);
     cfg.ntp_tijdzone[sizeof(cfg.ntp_tijdzone) - 1] = '\0';
     strncpy(cfg.taal, "nl", sizeof(cfg.taal));
@@ -79,8 +76,7 @@ static void config_opslaan(const AppConfig& cfg) {
   prefs.putBool("geconfigureerd", true);
   prefs.putString("wifi_ssid",  cfg.wifi_ssid);
   prefs.putString("wifi_pw",    cfg.wifi_wachtwoord);
-  prefs.putString("tg_token",   cfg.telegram_token);
-  prefs.putString("tg_chatid",  cfg.telegram_chat_id);
+  prefs.putString("cb_user",    cfg.callmebot_user);
   prefs.putString("tijdzone",   cfg.ntp_tijdzone);
   prefs.putString("taal",       cfg.taal);
 

@@ -68,9 +68,9 @@ static void pf_bel_callback(lv_event_t* e) {
     return;
   }
 
-  // Telegram-configuratie controleren
-  if (g_config.telegram_token[0] == '\0' || g_config.telegram_chat_id[0] == '\0') {
-    DBG_WARN("Telegram niet geconfigureerd.");
+  // CallMeBot-configuratie controleren
+  if (g_config.callmebot_user[0] == '\0') {
+    DBG_WARN("CallMeBot niet geconfigureerd.");
     if (pf_label_status != NULL) {
       lv_label_set_text(pf_label_status, g_lang->pf_niet_ingesteld);
       lv_obj_set_style_text_color(pf_label_status, lv_color_hex(0xFF8844), 0);
@@ -92,16 +92,13 @@ static void pf_bel_callback(lv_event_t* e) {
   }
   lv_task_handler();  // LVGL even laten renderen zodat de UI zichtbaar bijwerkt
 
-  // Telegram Bot API URL opbouwen (GET-methode, simpel en betrouwbaar)
-  // Documentatie: https://core.telegram.org/bots/api#sendmessage
-  String url = "https://api.telegram.org/bot";
-  url += g_config.telegram_token;
-  url += "/sendMessage?chat_id=";
-  url += g_config.telegram_chat_id;
-  url += "&text=";
-  url += "%F0%9F%94%94%20Zoek%20Telefoon!%0A%0AUw%20telefoon%20wordt%20gezocht%20via%20ESP32.%0ATik%20op%20dit%20bericht%20om%20te%20bevestigen.";
+  // CallMeBot API URL opbouwen (GET-methode)
+  // Documentatie: https://www.callmebot.com/
+  String url = "https://api2.callmebot.com/start.php?source=esp32&user=";
+  url += g_config.callmebot_user;
+  url += "&text=Zoek%20mijn%20telefoon&lang=nl-NL-Standard-B&rpt=2&cc=no";
 
-  DBG_INFO("Telegram bericht versturen naar chat: %s", g_config.telegram_chat_id);
+  DBG_INFO("CallMeBot oproep starten voor gebruiker: %s", g_config.callmebot_user);
 
   // HTTPS verzoek versturen
   WiFiClientSecure client;

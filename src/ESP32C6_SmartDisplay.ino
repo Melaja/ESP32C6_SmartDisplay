@@ -46,7 +46,7 @@
 // ============================================================
 #define DEBUG_SERIAL 1
 #define DEBUG_LEVEL 3
-#define VERSIE_STRING "v2.2.0"
+#define VERSIE_STRING "v2.3.0"
 
 // ============================================================
 // VERPLICHTE INCLUDE VOLGORDE
