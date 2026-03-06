@@ -7,8 +7,8 @@
             De tijd wordt gesynchroniseerd via NTP over WiFi.
             Bijwerken gebeurt via een LVGL timer elke seconde.
   Auteur  : JWP van Renen
-  Versie  : v1.1.0
-  Datum   : 2026-03-06 19:04:52 (CET)
+  Versie  : v1.1.1
+  Datum   : 2026-03-06 19:29:24 (CET)
 */
 
 #pragma once
@@ -111,7 +111,7 @@ static void scherm_datetime_aanmaken(lv_obj_t* parent) {
   static const uint8_t bar_breed  = 4;
   static const uint8_t bar_gap    = 2;
   static const uint8_t bar_bottom = 22;  // y van de onderkant
-  static const uint8_t bar_rechts = 6;   // marge rechts
+  static const uint8_t bar_rechts = 14;  // marge rechts (vergroot voor ronde schermhoeken)
 
   for (int i = 0; i < 4; i++) {
     dt_wifi_bar[i] = lv_obj_create(parent);
