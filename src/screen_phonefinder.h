@@ -36,6 +36,24 @@ static lv_obj_t* pf_spinner        = NULL;  // Laad-animatie tijdens verzenden
 static volatile bool pf_bezig = false;
 
 // ============================================================
+// URL-ENCODE HULPFUNCTIE: codeert tekst voor gebruik in een URL
+// ============================================================
+static String pf_url_encode(const char* tekst) {
+  String encoded = "";
+  char hex[4];
+  while (*tekst) {
+    unsigned char c = (unsigned char)*tekst++;
+    if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+      encoded += (char)c;
+    } else {
+      snprintf(hex, sizeof(hex), "%%%02X", c);
+      encoded += hex;
+    }
+  }
+  return encoded;
+}
+
+// ============================================================
 // STATUS AUTO-CLEAR TIMER: wist statusmelding na 5 seconden
 // ============================================================
 static void pf_status_clear_cb(lv_timer_t* timer) {
@@ -96,7 +114,9 @@ static void pf_bel_callback(lv_event_t* e) {
   // Documentatie: https://www.callmebot.com/
   String url = "https://api2.callmebot.com/start.php?source=esp32&user=";
   url += g_config.callmebot_user;
-  url += "&text=Zoek%20mijn%20telefoon&lang=nl-NL-Standard-B&rpt=2&cc=no";
+  url += "&text=";
+  url += pf_url_encode(g_config.callmebot_tekst);
+  url += "&lang=nl-NL-Standard-B&rpt=2&cc=no";
 
   DBG_INFO("CallMeBot oproep starten voor gebruiker: %s", g_config.callmebot_user);
 

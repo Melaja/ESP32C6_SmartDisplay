@@ -5,6 +5,16 @@
 
 ---
 
+## v2.4.0 - 2026-03-06
+
+### Nieuw
+- Webportaal: veld "Beltekst" toegevoegd in de CallMeBot-sectie.
+  De gesproken tekst bij het bellen is nu instelbaar via het configuratiescherm (standaard: "Zoek mijn telefoon").
+- `config_manager.h`: veld `callmebot_tekst[128]` toegevoegd, opgeslagen als NVS-sleutel `cb_tekst`.
+- `screen_phonefinder.h`: tekst wordt URL-gecodeerd via `pf_url_encode()` voor gebruik in de CallMeBot-URL.
+
+---
+
 ## v2.3.0 - 2026-03-06
 
 ### Gewijzigd

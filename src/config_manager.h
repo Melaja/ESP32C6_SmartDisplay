@@ -22,6 +22,7 @@ struct AppConfig {
   char wifi_ssid[64];          // WiFi netwerknaam
   char wifi_wachtwoord[64];    // WiFi wachtwoord
   char callmebot_user[32];     // CallMeBot gebruikersnaam (bijv. "@UwNaam")
+  char callmebot_tekst[128];   // Gesproken tekst bij bellen (bijv. "Zoek mijn telefoon")
   char ntp_tijdzone[64];       // POSIX tijdzone (bijv. "CET-1CEST,M3.5.0,M10.5.0/3")
   char taal[4];                // Interface taal: "nl" (standaard) of "en"
 };
@@ -46,6 +47,8 @@ static bool config_laden(AppConfig& cfg) {
     prefs.getString("wifi_ssid",   cfg.wifi_ssid,        sizeof(cfg.wifi_ssid));
     prefs.getString("wifi_pw",     cfg.wifi_wachtwoord,  sizeof(cfg.wifi_wachtwoord));
     prefs.getString("cb_user",     cfg.callmebot_user,   sizeof(cfg.callmebot_user));
+    prefs.getString("cb_tekst",    cfg.callmebot_tekst,  sizeof(cfg.callmebot_tekst));
+    if (cfg.callmebot_tekst[0] == '\0') strncpy(cfg.callmebot_tekst, "Zoek mijn telefoon", sizeof(cfg.callmebot_tekst) - 1);
     prefs.getString("tijdzone",    cfg.ntp_tijdzone,     sizeof(cfg.ntp_tijdzone));
     prefs.getString("taal",        cfg.taal,             sizeof(cfg.taal));
     // Standaard "nl" als taal niet opgeslagen is (oudere NVS)
@@ -56,6 +59,7 @@ static bool config_laden(AppConfig& cfg) {
     cfg.wifi_ssid[0]       = '\0';
     cfg.wifi_wachtwoord[0] = '\0';
     cfg.callmebot_user[0]  = '\0';
+    strncpy(cfg.callmebot_tekst, "Zoek mijn telefoon", sizeof(cfg.callmebot_tekst) - 1);
     strncpy(cfg.ntp_tijdzone, CONFIG_STANDAARD_TIJDZONE, sizeof(cfg.ntp_tijdzone) - 1);
     cfg.ntp_tijdzone[sizeof(cfg.ntp_tijdzone) - 1] = '\0';
     strncpy(cfg.taal, "nl", sizeof(cfg.taal));
@@ -77,6 +81,7 @@ static void config_opslaan(const AppConfig& cfg) {
   prefs.putString("wifi_ssid",  cfg.wifi_ssid);
   prefs.putString("wifi_pw",    cfg.wifi_wachtwoord);
   prefs.putString("cb_user",    cfg.callmebot_user);
+  prefs.putString("cb_tekst",   cfg.callmebot_tekst);
   prefs.putString("tijdzone",   cfg.ntp_tijdzone);
   prefs.putString("taal",       cfg.taal);
 

@@ -9,7 +9,7 @@
             - Na opslaan: herstart met nieuwe instellingen
             - Volledig tweetalig: Nederlands / English (op basis van cfg.taal)
   Auteur  : JWP van Renen
-  Versie  : v2.3.0
+  Versie  : v2.4.0
   Datum   : 2026-03-04 00:00:00 (Europe/Brussels)
 */
 
@@ -135,7 +135,9 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
     );
   }
   // CallMeBot gebruikersnaam: als al ingesteld password-veld, anders tekstveld.
-  html += F("<label>CallMeBot gebruikersnaam</label>");
+  html += "<label>";
+  html += isEn ? "CallMeBot username" : "CallMeBot gebruikersnaam";
+  html += "</label>";
   if (cfg.callmebot_user[0] != '\0') {
     html += "<input type='password' name='cb_user' value='' placeholder='";
     html += isEn ? "Saved - leave empty to keep current value" : "Opgeslagen - laat leeg om te behouden";
@@ -143,6 +145,13 @@ static String wc_html_formulier(const AppConfig& cfg, const String& melding = ""
   } else {
     html += F("<input type='text' name='cb_user' value='' placeholder='@UwNaam'>");
   }
+  // Beltekst: gewone tekst, geen gevoelige data, huidige waarde tonen.
+  html += "<label>";
+  html += isEn ? "Call text (spoken message)" : "Beltekst (gesproken bericht)";
+  html += "</label>";
+  html += "<input type='text' name='cb_tekst' value='" + String(cfg.callmebot_tekst) + "' placeholder='";
+  html += isEn ? "Find my phone" : "Zoek mijn telefoon";
+  html += "'>";
 
   // --- Tijdzone sectie ---
   html += "<h2>&#128336; ";
@@ -216,9 +225,9 @@ static void wc_handle_opslaan() {
   String ssid    = wc_url_decode(wc_server.arg("wifi_ssid"));
   String pw      = wc_url_decode(wc_server.arg("wifi_pw"));
   String cbuser  = wc_url_decode(wc_server.arg("cb_user"));
+  String cbtekst = wc_url_decode(wc_server.arg("cb_tekst"));
   String tijdzone= wc_url_decode(wc_server.arg("tijdzone"));
-  // Spaties/regelafbrekingen verwijderen (komen voor bij kopiëren uit Telegram)
-  ssid.trim(); cbuser.trim();
+  ssid.trim(); cbuser.trim(); cbtekst.trim();
   String taal    = wc_server.arg("taal");
   if (taal != "nl" && taal != "en") taal = "nl";
   bool isEn = (taal == "en");
@@ -251,6 +260,11 @@ static void wc_handle_opslaan() {
     DBG_INFO("CallMeBot gebruiker bijgewerkt.");
   } else {
     DBG_INFO("CallMeBot gebruiker ongewijzigd (leeg ingestuurd).");
+  }
+  if (cbtekst.length() > 0) {
+    strncpy(cfg.callmebot_tekst, cbtekst.c_str(), sizeof(cfg.callmebot_tekst) - 1);
+    cfg.callmebot_tekst[sizeof(cfg.callmebot_tekst) - 1] = '\0';
+    DBG_INFO("CallMeBot tekst bijgewerkt.");
   }
 
   strncpy(cfg.ntp_tijdzone, tijdzone.c_str(), sizeof(cfg.ntp_tijdzone) - 1);
