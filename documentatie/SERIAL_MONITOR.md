@@ -77,7 +77,7 @@ Na de upload start je de monitor opnieuw.
 
 ## Poortnummer wijzigen
 
-Als de ESP op een andere poort verschijnt (bijv. `/dev/ttyACM0`), pas dan regel 14 aan in `monitor.py`:
+Als de ESP op een andere poort verschijnt (bijv. `/dev/ttyACM0`), pas dan regel 18 aan in `monitor.py`:
 
 ```python
 PORT = '/dev/ttyACM0'
